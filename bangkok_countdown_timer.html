@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangkok Reis Timer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(45deg, #0f0f23, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        .container {
+            text-align: center;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: all 0.5s ease;
+        }
+        
+        .container:hover {
+            transform: perspective(1000px) rotateX(0deg) scale(1.02);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.4);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b9d, #c44569, #f8b500, #ff6b6b);
+            background-size: 300% 300%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+            text-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
+        }
+        
+        @keyframes titleGlow {
+            0% { background-position: 0% 50%; filter: brightness(1); }
+            100% { background-position: 100% 50%; filter: brightness(1.3); }
+        }
+        
+        .phase {
+            font-size: 1.5rem;
+            color: #4ecdc4;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.6);
+            animation: phaseGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes phaseGlow {
+            0% { text-shadow: 0 0 20px rgba(78, 205, 196, 0.6); }
+            100% { text-shadow: 0 0 30px rgba(78, 205, 196, 0.9); }
+        }
+        
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .time-unit {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem 1rem;
+            min-width: 120px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .time-unit::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 3s ease-in-out infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(30deg); }
+        }
+        
+        .time-unit:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .time-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: numberPulse 1s ease-in-out infinite alternate;
+            position: relative;
+            z-index: 2;
+        }
+        
+        @keyframes numberPulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        .time-label {
+            font-size: 0.9rem;
+            color: #b8b8b8;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .switch-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .switch-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.5);
+            background: linear-gradient(45deg, #ee5a52, #ff6b6b);
+        }
+        
+        .switch-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .plane-icon {
+            font-size: 4rem;
+            margin: 1rem 0;
+            animation: fly 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.6));
+            transition: all 1s ease;
+        }
+        
+        @keyframes fly {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(20px) rotate(5deg); }
+            75% { transform: translateX(-20px) rotate(-5deg); }
+        }
+        
+        .plane-icon.flying {
+            animation: flyingMode 3s ease-in-out infinite;
+            font-size: 5rem;
+            filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
+        }
+        
+        @keyframes flyingMode {
+            0%, 100% { 
+                transform: translateX(0) translateY(0) rotate(0deg) scale(1); 
+                filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
+            }
+            25% { 
+                transform: translateX(40px) translateY(-20px) rotate(15deg) scale(1.1); 
+                filter: drop-shadow(0 0 40px rgba(255, 107, 107, 0.9));
+            }
+            50% { 
+                transform: translateX(0) translateY(-40px) rotate(0deg) scale(1.2); 
+                filter: drop-shadow(0 0 50px rgba(78, 205, 196, 1));
+            }
+            75% { 
+                transform: translateX(-40px) translateY(-20px) rotate(-15deg) scale(1.1); 
+                filter: drop-shadow(0 0 40px rgba(150, 206, 180, 0.9));
+            }
+        }
+        
+        .clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        
+        .clouds.show {
+            opacity: 1;
+        }
+        
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            animation: floatClouds 20s linear infinite;
+        }
+        
+        @keyframes floatClouds {
+            0% { transform: translateX(-200px); }
+            100% { transform: translateX(calc(100vw + 200px)); }
+        }
+        
+        .flight-info {
+            background: rgba(0, 100, 200, 0.1);
+            border: 2px solid rgba(0, 150, 255, 0.3);
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+            backdrop-filter: blur(15px);
+        }
+        
+        .flight-info.show {
+            display: block;
+            animation: slideIn 1s ease-out;
+        }
+        
+        @keyframes slideIn {
+            0% { transform: translateY(30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        .flight-details {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .flight-detail {
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .flight-detail-label {
+            font-size: 0.9rem;
+            color: #87CEEB;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .flight-detail-value {
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .altitude-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            display: none;
+        }
+        
+        .altitude-indicator.show {
+            display: flex;
+            animation: fadeIn 2s ease;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        .altitude-bar {
+            width: 200px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .altitude-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 10px;
+            animation: altitudePulse 2s ease-in-out infinite alternate;
+            width: 85%;
+        }
+        
+        @keyframes altitudePulse {
+            0% { width: 80%; }
+            100% { width: 90%; }
+        }
+        
+        .completed {
+            font-size: 2rem;
+            color: #4ecdc4;
+            animation: celebration 1s ease-in-out infinite alternate;
+            text-shadow: 0 0 30px rgba(78, 205, 196, 0.8);
+        }
+        
+        @keyframes celebration {
+            0% { transform: scale(1) rotate(-2deg); }
+            100% { transform: scale(1.1) rotate(2deg); }
+        }
+        
+        .main-countdown {
+            transform: scale(1);
+            transition: all 0.5s ease;
+        }
+        
+        .main-countdown.small {
+            transform: scale(0.8);
+            opacity: 0.8;
+        }
+        
+        .flight-countdown {
+            margin-top: 1rem;
+        }
+        
+        .waiting-message {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 107, 157, 0.1);
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+        
+        .questions-container {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 107, 157, 0.1);
+            border-radius: 20px;
+            margin: 2rem 0;
+            border: 2px solid rgba(255, 107, 157, 0.3);
+            backdrop-filter: blur(15px);
+        }
+        
+        .questions-container.show {
+            display: block;
+            animation: slideIn 0.8s ease-out;
+        }
+        
+        .question {
+            font-size: 1.5rem;
+            color: #ff6b9d;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(255, 107, 157, 0.6);
+            animation: questionGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes questionGlow {
+            0% { text-shadow: 0 0 20px rgba(255, 107, 157, 0.6); }
+            100% { text-shadow: 0 0 30px rgba(255, 107, 157, 0.9); }
+        }
+        
+        .answer-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(45deg, rgba(255, 107, 157, 0.2), rgba(196, 69, 105, 0.2));
+            border: 2px solid rgba(255, 107, 157, 0.4);
+            color: #fff;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .answer-btn:hover {
+            background: linear-gradient(45deg, rgba(255, 107, 157, 0.4), rgba(196, 69, 105, 0.4));
+            border-color: rgba(255, 107, 157, 0.8);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 157, 0.3);
+        }
+        
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff6b9d;
+            animation: confettiFall 3s ease-out forwards;
+        }
+        
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .surprise-reveal {
+            display: none;
+            text-align: center;
+            background: linear-gradient(45deg, rgba(255, 107, 157, 0.2), rgba(78, 205, 196, 0.2));
+            border: 3px solid rgba(255, 107, 157, 0.5);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(20px);
+            animation: surpriseGlow 2s ease-in-out infinite alternate;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .surprise-reveal.show {
+            display: block !important;
+            animation: revealAnimation 1.5s ease-out;
+        }
+        
+        @keyframes revealAnimation {
+            0% { 
+                transform: scale(0.8) rotateY(90deg); 
+                opacity: 0; 
+            }
+            50% { 
+                transform: scale(1.1) rotateY(45deg); 
+            }
+            100% { 
+                transform: scale(1) rotateY(0deg); 
+                opacity: 1; 
+            }
+        }
+        
+        @keyframes surpriseGlow {
+            0% { 
+                border-color: rgba(255, 107, 157, 0.5);
+                box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+            }
+            100% { 
+                border-color: rgba(78, 205, 196, 0.8);
+                box-shadow: 0 0 40px rgba(78, 205, 196, 0.5);
+            }
+        }
+        
+        .surprise-title {
+            font-size: 2rem;
+            background: linear-gradient(45deg, #ff6b9d, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            animation: titleBounce 1s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleBounce {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+                margin: 1rem;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .countdown {
+                gap: 1rem;
+            }
+            
+            .time-unit {
+                min-width: 100px;
+                padding: 1rem 0.5rem;
+            }
+            
+            .time-value {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="clouds" id="clouds"></div>
+    
+    <div class="container">
+        <h1 class="title">💕 ข้อความพิเศษสำหรับเธอ 💕</h1>
+        <div class="phase" id="phase">ฉันมีสิ่งดีๆ ให้เธอ... 🎁</div>
+        <div class="plane-icon" id="planeIcon" style="display: none;">✈️</div>
+        
+        <div class="flight-info" id="flightInfo" style="display: none;">
+            <div class="flight-detail-label">✈️ VLUCHT INFORMATIE</div>
+            <div class="flight-details">
+                <div class="flight-detail">
+                    <div class="flight-detail-label">Vertrek</div>
+                    <div class="flight-detail-value">AMS 17:15</div>
+                </div>
+                <div class="flight-detail">
+                    <div class="flight-detail-label">Aankomst</div>
+                    <div class="flight-detail-value">BKK 09:30</div>
+                </div>
+                <div class="flight-detail">
+                    <div class="flight-detail-label">Datum</div>
+                    <div class="flight-detail-value">1 Aug</div>
+                </div>
+                <div class="flight-detail">
+                    <div class="flight-detail-label">Vluchtijd</div>
+                    <div class="flight-detail-value" id="flightDurationDisplay">--h --m</div>
+                </div>
+            </div>
+            
+            <div class="waiting-message" id="waitingMessage">
+                <div style="color: #ff6b9d; font-size: 1.2rem; margin: 1rem 0;">
+                    💺 Wachten tot ik in het vliegtuig zit...
+                </div>
+                <div style="color: #87CEEB; font-size: 0.9rem;">
+                    De vlucht countdown start pas als ik daadwerkelijk in het vliegtuig zit!
+                </div>
+            </div>
+            
+            <div class="altitude-indicator" id="altitudeIndicator">
+                <span style="color: #87CEEB; font-size: 0.9rem;">🌤️ KRUISHOOGTE</span>
+                <div class="altitude-bar">
+                    <div class="altitude-fill"></div>
+                </div>
+                <span style="color: #fff; font-weight: 700;">11,000m</span>
+            </div>
+        </div>
+        
+        <div class="countdown main-countdown" id="countdown" style="display: none;">
+            <div class="time-unit">
+                <div class="time-value" id="days">0</div>
+                <div class="time-label">Dagen</div>
+            </div>
+            <div class="time-unit">
+                <div class="time-value" id="hours">0</div>
+                <div class="time-label">Uren</div>
+            </div>
+            <div class="time-unit">
+                <div class="time-value" id="minutes">0</div>
+                <div class="time-label">Minuten</div>
+            </div>
+            <div class="time-unit">
+                <div class="time-value" id="seconds">0</div>
+                <div class="time-label">Seconden</div>
+            </div>
+        </div>
+        
+        <div class="countdown flight-countdown" id="flightCountdown" style="display: none;">
+            <div style="color: #ff6b9d; font-size: 1.2rem; margin-bottom: 1rem;">
+                ✈️ Vlucht naar Bangkok
+            </div>
+            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                <div class="time-unit" style="min-width: 80px; padding: 1rem 0.5rem;">
+                    <div class="time-value" id="flightHours">0</div>
+                    <div class="time-label">Uren</div>
+                </div>
+                <div class="time-unit" style="min-width: 80px; padding: 1rem 0.5rem;">
+                    <div class="time-value" id="flightMinutes">0</div>
+                    <div class="time-label">Minuten</div>
+                </div>
+                <div class="time-unit" style="min-width: 80px; padding: 1rem 0.5rem;">
+                    <div class="time-value" id="flightSeconds">0</div>
+                    <div class="time-label">Seconden</div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="switch-btn" id="switchBtn" onclick="startQuestions()">
+            💕 ฉันคิดถึงและอยากรู้เพิ่มเติม!
+        </button>
+        
+        <div class="questions-container" id="questionsContainer">
+            <div class="question" id="questionText"></div>
+            <div id="answersContainer"></div>
+        </div>
+        
+        <div class="surprise-reveal" id="surpriseReveal">
+            <div class="surprise-title">🎉 VERRASSING! 🎉</div>
+            <div style="font-size: 1.5rem; color: #4ecdc4; margin: 1rem 0;">
+                💕 Ik ga naar Bangkok! 💕
+            </div>
+            <div style="color: #ff6b9d; font-size: 1.1rem; margin-bottom: 1.5rem;">
+                En hier kun je precies zien wanneer ik bij je terug ben! 🥰
+            </div>
+            
+            <!-- Vluchtgegevens in de reveal -->
+            <div style="background: rgba(0, 150, 255, 0.2); border: 2px solid rgba(0, 150, 255, 0.4); border-radius: 15px; padding: 1.5rem; margin: 1rem 0; backdrop-filter: blur(15px);">
+                <div style="color: #87CEEB; font-size: 1.1rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">✈️ VLUCHT INFORMATIE</div>
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                        <div style="font-size: 0.9rem; color: #87CEEB;">Vertrek</div>
+                        <div style="font-size: 1.2rem; color: #fff; font-weight: 700;">AMS 17:15</div>
+                    </div>
+                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                        <div style="font-size: 0.9rem; color: #87CEEB;">Aankomst</div>
+                        <div style="font-size: 1.2rem; color: #fff; font-weight: 700;">BKK 09:30</div>
+                    </div>
+                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                        <div style="font-size: 0.9rem; color: #87CEEB;">Datum</div>
+                        <div style="font-size: 1.2rem; color: #fff; font-weight: 700;">1 Augustus</div>
+                    </div>
+                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                        <div style="font-size: 0.9rem; color: #87CEEB;">Vluchtijd</div>
+                        <div style="font-size: 1.2rem; color: #fff; font-weight: 700;" id="revealFlightDuration">--h --m</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Totale wachttijd in de reveal -->
+            <div style="background: rgba(255, 107, 157, 0.2); border: 2px solid rgba(255, 107, 157, 0.4); border-radius: 15px; padding: 1.5rem; margin: 1rem 0; backdrop-filter: blur(15px);">
+                <div style="color: #ff6b9d; font-size: 1.1rem; margin-bottom: 1rem;">💕 TOTALE WACHTTIJD VOOR JOU</div>
+                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                    <div style="text-align: center; background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; min-width: 80px;">
+                        <div style="font-size: 2rem; color: #fff; font-weight: 700;" id="revealDays">0</div>
+                        <div style="font-size: 0.8rem; color: #b8b8b8;">DAGEN</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; min-width: 80px;">
+                        <div style="font-size: 2rem; color: #fff; font-weight: 700;" id="revealHours">0</div>
+                        <div style="font-size: 0.8rem; color: #b8b8b8;">UREN</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; min-width: 80px;">
+                        <div style="font-size: 2rem; color: #fff; font-weight: 700;" id="revealMinutes">0</div>
+                        <div style="font-size: 0.8rem; color: #b8b8b8;">MINUTEN</div>
+                    </div>
+                </div>
+                <div style="color: #87CEEB; font-size: 0.9rem; margin-top: 1rem; text-align: center;">
+                    Tot we elkaar weer in de armen vallen! 🤗
+                </div>
+            </div>
+            
+            <div style="color: #4ecdc4; font-size: 1rem; margin-top: 1rem;">
+                Deze timer blijft live updaten! 💕✨
+            </div>
+        </div>
+        
+        <button class="switch-btn" id="boardingBtn" onclick="startActualFlight()" style="display: none; background: linear-gradient(45deg, #4ecdc4, #45b7d1);">
+            🛫 Ik zit nu in het vliegtuig!
+        </button>
+        
+        <div id="completedMessage" class="completed" style="display: none;">
+            💕 Aangekomen in Bangkok! We zijn weer samen! 💕
+        </div>
+    </div>
+
+    <div class="confetti" id="confetti"></div>
+
+    <script>
+        // Vertrekdatum: 31 juli 2025, 17:15 Nederlandse tijd
+        const departureTime = new Date('2025-07-31T17:15:00+02:00');
+        
+        // Aankomst: 1 augustus 2025, 09:30 Bangkok tijd
+        const arrivalTime = new Date('2025-08-01T09:30:00+07:00');
+        
+        // Bereken vluchtduur
+        const flightDuration = arrivalTime - departureTime;
+        
+        let isFlightScreenMode = false;
+        let isActuallyFlying = false;
+        let flightStartTime = null;
+        let showQuestions = false;
+        let currentQuestion = 0;
+        let revealLiveCountdownInterval = null;
+        
+        const questions = [
+            {
+                question: "คิดถึงฉันบ้างไหม? 🥺",
+                answers: ["นิดหน่อย", "คิดถึงมากเลย!", "คิดถึงมากกว่าคำพูดจะบรรยาย 💕"]
+            },
+            {
+                question: "อยากทำอะไรเป็นอย่างแรกเมื่อฉันกลับมา? 😍",
+                answers: ["กอดฉัน!", "สั่งอาหารกินด้วยกัน", "ไม่ปล่อยฉันไปไหนอีกเลย! 🤗"]
+            },
+            {
+                question: "อยากรู้เวลาที่ฉันมาถึงแค่ไหน? 💕",
+                answers: ["อยากรู้มาก!", "รอไม่ไหวแล้ว!", "บอกฉันเดี๋ยวนี้เลย! 😭"]
+            }
+        ];
+        
+        // Speciale Thai reacties
+        const reactions = [
+            ["ฉันก็คิดถึงเธอเหมือนกัน! 🥺", "ฉันรู้มาตลอด! 💕", "ฉันรักเธอ! 😍"],
+            ["แผนที่สมบูรณ์แบบ! 🤗", "ใช่เลย! มูกะทะ! 🥩🔥", "รอไม่ไหวแล้ว! 💕"],
+            ["มาแล้ว! 🎉", "พิเศษสำหรับเธอ! ✨", "เธอจะชอบแน่นอน! 🥰"]
+        ];
+        
+        // Sterren genereren
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        function createConfetti() {
+            const confettiContainer = document.getElementById('confetti');
+            const colors = ['#ff6b9d', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffd93d', '#6c5ce7'];
+            
+            for (let i = 0; i < 150; i++) {
+                const confettiPiece = document.createElement('div');
+                confettiPiece.className = 'confetti-piece';
+                confettiPiece.style.left = Math.random() * 100 + '%';
+                confettiPiece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confettiPiece.style.animationDelay = Math.random() * 3 + 's';
+                confettiPiece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                
+                // Verschillende vormen
+                if (Math.random() > 0.5) {
+                    confettiPiece.style.borderRadius = '50%';
+                } else {
+                    confettiPiece.style.transform += ' rotate(' + (Math.random() * 360) + 'deg)';
+                }
+                
+                confettiContainer.appendChild(confettiPiece);
+            }
+            
+            // Ruim confetti op na 5 seconden
+            setTimeout(() => {
+                confettiContainer.innerHTML = '';
+            }, 5000);
+        }
+        
+        function startQuestions() {
+            showQuestions = true;
+            currentQuestion = 0;
+            
+            document.getElementById('switchBtn').style.display = 'none';
+            document.getElementById('questionsContainer').classList.add('show');
+            
+            displayQuestion();
+        }
+        
+        function displayQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('questionText').textContent = question.question;
+            
+            const answersContainer = document.getElementById('answersContainer');
+            answersContainer.innerHTML = '';
+            
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = answer;
+                button.onclick = () => nextQuestion(index);
+                answersContainer.appendChild(button);
+            });
+        }
+        
+        function nextQuestion(answerIndex) {
+            // Toon korte reactie
+            const reactionText = reactions[currentQuestion][answerIndex];
+            document.getElementById('questionText').textContent = reactionText;
+            document.getElementById('answersContainer').style.display = 'none';
+            
+            setTimeout(() => {
+                currentQuestion++;
+                
+                if (currentQuestion < questions.length) {
+                    document.getElementById('answersContainer').style.display = 'block';
+                    displayQuestion();
+                } else {
+                    // Alle vragen beantwoord - toon verrassing!
+                    document.getElementById('questionsContainer').classList.remove('show');
+                    setTimeout(() => {
+                        revealSurprise();
+                    }, 500);
+                }
+            }, 1500);
+        }
+        
+        function revealSurprise() {
+            // Confetti effect!
+            createConfetti();
+            
+            // Bereken vluchtduur
+            const duration = flightDuration / (1000 * 60 * 60);
+            const flightHours = Math.floor(duration);
+            const flightMinutes = Math.floor((duration - flightHours) * 60);
+            
+            // Maak de complete HTML string met alle elementen
+            const surpriseHTML = `
+                <div class="surprise-title">🎉 เซอร์ไพรส์! 🎉</div>
+                <div style="font-size: 1.5rem; color: #4ecdc4; margin: 1rem 0;">
+                    💕 ฉันจะไปหาที่รักของฉัน! 💕
+                </div>
+                <div style="color: #ff6b9d; font-size: 1.1rem; margin-bottom: 1.5rem;">
+                    และที่นี่เธอสามารถดูได้ว่าฉันจะกลับมาหาเธอเมื่อไหร่! 🥰
+                </div>
+                
+                <!-- Vluchtgegevens in de reveal -->
+                <div style="background: rgba(0, 150, 255, 0.2); border: 2px solid rgba(0, 150, 255, 0.4); border-radius: 15px; padding: 1.5rem; margin: 1rem 0; backdrop-filter: blur(15px);">
+                    <div style="color: #87CEEB; font-size: 1.1rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">✈️ ข้อมูลเที่ยวบิน</div>
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                        <div style="text-align: center; flex: 1; min-width: 120px;">
+                            <div style="font-size: 0.9rem; color: #87CEEB;">ออกเดินทาง</div>
+                            <div style="font-size: 1.2rem; color: #fff; font-weight: 700;">AMS 17:15</div>
+                        </div>
+                        <div style="text-align: center; flex: 1; min-width: 120px;">
+                            <div style="font-size: 0.9rem; color: #87CEEB;">มาถึง</div>
+                            <div style="font-size: 1.2rem; color: #fff; font-weight: 700;">BKK 09:30</div>
+                        </div>
+                        <div style="text-align: center; flex: 1; min-width: 120px;">
+                            <div style="font-size: 0.9rem; color: #87CEEB;">วันที่</div>
+                            <div style="font-size: 1.2rem; color: #fff; font-weight: 700;">1 สิงหาคม</div>
+                        </div>
+                        <div style="text-align: center; flex: 1; min-width: 120px;">
+                            <div style="font-size: 0.9rem; color: #87CEEB;">เวลาบิน</div>
+                            <div style="font-size: 1.2rem; color: #fff; font-weight: 700;">${flightHours}ช ${flightMinutes}น</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- LIVE Totale wachttijd in de reveal -->
+                <div style="background: rgba(255, 107, 157, 0.2); border: 2px solid rgba(255, 107, 157, 0.4); border-radius: 15px; padding: 1.5rem; margin: 1rem 0; backdrop-filter: blur(15px);">
+                    <div style="color: #ff6b9d; font-size: 1.1rem; margin-bottom: 1rem;">💕 เวลารอคอยทั้งหมดสำหรับเธอ</div>
+                    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                        <div style="text-align: center; background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; min-width: 80px;">
+                            <div style="font-size: 2.5rem; color: #fff; font-weight: 700; animation: numberPulse 1s ease-in-out infinite alternate;" id="revealDaysLive">0</div>
+                            <div style="font-size: 0.8rem; color: #b8b8b8;">วัน</div>
+                        </div>
+                        <div style="text-align: center; background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; min-width: 80px;">
+                            <div style="font-size: 2.5rem; color: #fff; font-weight: 700; animation: numberPulse 1s ease-in-out infinite alternate;" id="revealHoursLive">0</div>
+                            <div style="font-size: 0.8rem; color: #b8b8b8;">ชั่วโมง</div>
+                        </div>
+                        <div style="text-align: center; background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; min-width: 80px;">
+                            <div style="font-size: 2.5rem; color: #fff; font-weight: 700; animation: numberPulse 1s ease-in-out infinite alternate;" id="revealMinutesLive">0</div>
+                            <div style="font-size: 0.8rem; color: #b8b8b8;">นาที</div>
+                        </div>
+                        <div style="text-align: center; background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; min-width: 80px;">
+                            <div style="font-size: 2.5rem; color: #fff; font-weight: 700; animation: numberPulse 1s ease-in-out infinite alternate;" id="revealSecondsLive">0</div>
+                            <div style="font-size: 0.8rem; color: #b8b8b8;">วินาที</div>
+                        </div>
+                    </div>
+                    <div style="color: #87CEEB; font-size: 0.9rem; margin-top: 1rem; text-align: center;">
+                        จนกว่าเราจะได้กอดกันอีกครั้ง! 🤗
+                    </div>
+                </div>
+                
+                <div style="color: #4ecdc4; font-size: 1rem; margin-top: 1rem;">
+                    ตัวนับเวลานี้จะอัปเดตแบบสด! 💕✨
+                </div>
+            `;
+            
+            // Zet de HTML in de surpriseReveal div
+            const surpriseEl = document.getElementById('surpriseReveal');
+            surpriseEl.innerHTML = surpriseHTML;
+            surpriseEl.classList.add('show');
+            
+            // Nu direct de countdown starten - elementen zijn er nu gegarandeerd
+            setTimeout(() => {
+                console.log('Starting countdown after HTML insertion...');
+                if (revealLiveCountdownInterval) {
+                    clearInterval(revealLiveCountdownInterval);
+                }
+                revealLiveCountdownInterval = setInterval(updateRevealCountdown, 1000);
+                updateRevealCountdown(); // Eerste update direct
+            }, 500);
+        }
+        
+        function updateRevealCountdown() {
+            const now = new Date();
+            const timeUntilArrival = arrivalTime - now;
+            
+            // Debug info
+            console.log('Current time:', now);
+            console.log('Arrival time:', arrivalTime);
+            console.log('Time until arrival (ms):', timeUntilArrival);
+            
+            // Check of elementen bestaan
+            const daysEl = document.getElementById('revealDaysLive');
+            const hoursEl = document.getElementById('revealHoursLive');
+            const minutesEl = document.getElementById('revealMinutesLive');
+            const secondsEl = document.getElementById('revealSecondsLive');
+            
+            if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
+                console.log('Elements not found');
+                return; // Stop als elementen niet bestaan
+            }
+            
+            if (timeUntilArrival <= 0) {
+                daysEl.textContent = '0';
+                hoursEl.textContent = '0';
+                minutesEl.textContent = '0';
+                secondsEl.textContent = '0';
+                clearInterval(revealLiveCountdownInterval);
+                // Toon aankomst bericht
+                const surpriseEl = document.querySelector('.surprise-reveal');
+                if (surpriseEl) {
+                    surpriseEl.innerHTML = `
+                        <div class="surprise-title">💕 มาถึงแล้ว! 💕</div>
+                        <div style="font-size: 2rem; color: #4ecdc4; margin: 2rem 0;">
+                            เรากลับมาอยู่ด้วยกันแล้ว! 🤗✈️💕
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            const days = Math.floor(timeUntilArrival / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeUntilArrival % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeUntilArrival % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeUntilArrival % (1000 * 60)) / 1000);
+            
+            console.log('Countdown:', days, 'days', hours, 'hours', minutes, 'minutes', seconds, 'seconds');
+            
+            daysEl.textContent = days;
+            hoursEl.textContent = hours;
+            minutesEl.textContent = minutes;
+            secondsEl.textContent = seconds;
+        }
+        
+        // Wolken genereren voor vluchtmodus
+        function createClouds() {
+            const cloudsContainer = document.getElementById('clouds');
+            for (let i = 0; i < 15; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                cloud.style.top = Math.random() * 100 + '%';
+                cloud.style.width = (Math.random() * 100 + 50) + 'px';
+                cloud.style.height = (Math.random() * 40 + 20) + 'px';
+                cloud.style.animationDelay = Math.random() * 20 + 's';
+                cloud.style.animationDuration = (Math.random() * 15 + 15) + 's';
+                cloudsContainer.appendChild(cloud);
+            }
+        }
+        
+        function updateCountdown() {
+            const now = new Date();
+            
+            if (!isFlightScreenMode) {
+                // Hoofdscherm: Aftellen naar vertrek
+                const timeUntilDeparture = departureTime - now;
+                
+                if (timeUntilDeparture <= 0) {
+                    document.getElementById('phase').textContent = '🛫 Tijd om te vertrekken!';
+                    if (!showQuestions) {
+                        document.getElementById('switchBtn').style.display = 'block';
+                    }
+                    return;
+                }
+                
+                const days = Math.floor(timeUntilDeparture / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeUntilDeparture % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeUntilDeparture % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeUntilDeparture % (1000 * 60)) / 1000);
+                
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+                
+            } else if (!isActuallyFlying) {
+                // Vluchtscherm maar nog niet aan het vliegen
+                const timeUntilDeparture = departureTime - now;
+                
+                if (timeUntilDeparture <= 0) {
+                    document.getElementById('phase').textContent = '🛫 Vertrek tijd! Klaar om in te stappen?';
+                    document.getElementById('boardingBtn').style.display = 'block';
+                    document.getElementById('waitingMessage').innerHTML = `
+                        <div style="color: #4ecdc4; font-size: 1.2rem; margin: 1rem 0;">
+                            🚪 Boarding time! Tijd om in te stappen!
+                        </div>
+                        <div style="color: #87CEEB; font-size: 0.9rem;">
+                            Klik op de knop zodra je in het vliegtuig zit
+                        </div>
+                    `;
+                } else {
+                    const days = Math.floor(timeUntilDeparture / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeUntilDeparture % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeUntilDeparture % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeUntilDeparture % (1000 * 60)) / 1000);
+                    
+                    document.getElementById('days').textContent = days;
+                    document.getElementById('hours').textContent = hours;
+                    document.getElementById('minutes').textContent = minutes;
+                    document.getElementById('seconds').textContent = seconds;
+                }
+                
+            } else {
+                // Daadwerkelijk aan het vliegen
+                const timeUntilArrival = arrivalTime - now;
+                
+                if (timeUntilArrival <= 0) {
+                    document.getElementById('phase').textContent = '💕 Aangekomen in Bangkok!';
+                    document.getElementById('countdown').style.display = 'none';
+                    document.getElementById('flightCountdown').style.display = 'none';
+                    document.getElementById('flightInfo').classList.remove('show');
+                    document.getElementById('altitudeIndicator').classList.remove('show');
+                    document.getElementById('clouds').classList.remove('show');
+                    document.getElementById('boardingBtn').style.display = 'none';
+                    document.getElementById('completedMessage').style.display = 'block';
+                    document.getElementById('planeIcon').classList.remove('flying');
+                    return;
+                }
+                
+                // Grote countdown naar aankomst
+                const totalHours = Math.floor(timeUntilArrival / (1000 * 60 * 60));
+                const minutes = Math.floor((timeUntilArrival % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeUntilArrival % (1000 * 60)) / 1000);
+                
+                document.getElementById('days').textContent = 0;
+                document.getElementById('hours').textContent = totalHours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+                
+                // Kleine vlucht countdown
+                const flightTimeElapsed = now - flightStartTime;
+                const flightTimeRemaining = flightDuration - flightTimeElapsed;
+                
+                if (flightTimeRemaining > 0) {
+                    const flightHours = Math.floor(flightTimeRemaining / (1000 * 60 * 60));
+                    const flightMinutes = Math.floor((flightTimeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const flightSeconds = Math.floor((flightTimeRemaining % (1000 * 60)) / 1000);
+                    
+                    document.getElementById('flightHours').textContent = flightHours;
+                    document.getElementById('flightMinutes').textContent = flightMinutes;
+                    document.getElementById('flightSeconds').textContent = flightSeconds;
+                }
+            }
+        }
+        
+        function switchToFlightScreen() {
+            isFlightScreenMode = true;
+            
+            // Verander titel en fase tekst
+            document.querySelector('.title').textContent = '💕 Op weg naar Bangkok 💕';
+            document.getElementById('phase').textContent = '✈️ Vlucht informatie - Wachten om in te stappen...';
+            
+            // Toon alle verborgen elementen
+            document.getElementById('planeIcon').style.display = 'block';
+            document.getElementById('countdown').style.display = 'flex';
+            document.getElementById('flightInfo').classList.add('show');
+            document.getElementById('countdown').classList.add('small');
+            
+            // Bereken en toon vluchtduur
+            const duration = flightDuration / (1000 * 60 * 60); // in uren
+            const hours = Math.floor(duration);
+            const minutes = Math.floor((duration - hours) * 60);
+            document.getElementById('flightDurationDisplay').textContent = `${hours}h ${minutes}m`;
+            
+            // Vliegtuig animatie maar nog niet vliegend
+            document.getElementById('planeIcon').textContent = '🛫';
+        }
+        
+        function startActualFlight() {
+            isActuallyFlying = true;
+            flightStartTime = new Date();
+            
+            document.getElementById('phase').textContent = '✈️ In de lucht naar Bangkok! Tot snel lieverd! 💕';
+            document.getElementById('boardingBtn').style.display = 'none';
+            
+            // Activeer alle vliegeffecten
+            document.getElementById('planeIcon').classList.add('flying');
+            document.getElementById('planeIcon').textContent = '🛩️';
+            document.getElementById('waitingMessage').style.display = 'none';
+            document.getElementById('flightCountdown').style.display = 'block';
+            
+            // Toon wolken en hoogte-indicator
+            setTimeout(() => {
+                document.getElementById('clouds').classList.add('show');
+                document.getElementById('altitudeIndicator').classList.add('show');
+            }, 1000);
+            
+            // Container vlieg-animatie
+            const container = document.querySelector('.container');
+            container.style.animation = 'fly 4s ease-in-out infinite';
+        }
+        
+        // Initialiseren
+        createStars();
+        createClouds();
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
