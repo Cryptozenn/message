@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>In case you forget </title>
+    <title>In case you forgetr</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
@@ -22,7 +22,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             position: relative;
         }
         
@@ -64,6 +65,10 @@
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             transform: perspective(1000px) rotateX(5deg);
             transition: all 0.5s ease;
+            margin: 2rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .container:hover {
@@ -527,9 +532,17 @@
         }
         
         @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+                padding: 1rem 0;
+            }
+            
             .container {
                 padding: 2rem 1rem;
                 margin: 1rem;
+                transform: none;
+                max-height: none;
+                min-height: auto;
             }
             
             .title {
